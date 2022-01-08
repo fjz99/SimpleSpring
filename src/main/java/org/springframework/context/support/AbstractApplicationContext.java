@@ -62,9 +62,9 @@ public abstract class AbstractApplicationContext
         //ApplicationContextAware是通过BeanPostProcesso完成的！
         factory.addBeanPostProcessor (new ApplicationContextAwareProcessor (this));
 
-        invokeBeanFactoryPostprocessor (factory);
+        invokeBeanFactoryPostprocessors (factory);
 
-        registerBeanPostProcessor (factory);
+        registerBeanPostProcessors (factory);
 
         createApplicationEventMultiCaster (factory);
 
@@ -96,21 +96,23 @@ public abstract class AbstractApplicationContext
         factory.addSingleton (APPLICATION_EVENT_MULTICASTER_BEAN_NAME, eventMulticaster);
     }
 
-    private void registerBeanPostProcessor(ConfigurableListableBeanFactory factory) {
-        for (String name : factory.getBeanDefinitionNames ()) {
-            BeanDefinition definition = factory.getBeanDefinition (name);
-            if (BeanPostProcessor.class.isAssignableFrom (definition.getBeanClass ())) {
-                factory.addBeanPostProcessor ((BeanPostProcessor) getBean (name));
-            }
+    /**
+     * 不要一个一个add，否则就会导致第2个processor被第一个processor处理，以此类推
+     */
+    private void registerBeanPostProcessors(ConfigurableListableBeanFactory factory) {
+        for (BeanPostProcessor processor :
+                factory.getBeansOfType (BeanPostProcessor.class).values ()) {
+            factory.addBeanPostProcessor (processor);
         }
     }
 
-    private void invokeBeanFactoryPostprocessor(ConfigurableListableBeanFactory factory) {
-        for (String name : factory.getBeanDefinitionNames ()) {
-            BeanDefinition definition = factory.getBeanDefinition (name);
-            if (BeanFactoryPostProcessor.class.isAssignableFrom (definition.getBeanClass ())) {
-                ((BeanFactoryPostProcessor) getBean (name)).postProcessBeanFactory (factory);
-            }
+    /**
+     * 类似的，也不要一个一个invoke
+     */
+    private void invokeBeanFactoryPostprocessors(ConfigurableListableBeanFactory factory) {
+        for (BeanFactoryPostProcessor processor :
+                factory.getBeansOfType (BeanFactoryPostProcessor.class).values ()) {
+            processor.postProcessBeanFactory (factory);
         }
     }
 
