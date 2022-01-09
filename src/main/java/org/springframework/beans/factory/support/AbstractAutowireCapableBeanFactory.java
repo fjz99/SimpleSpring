@@ -4,13 +4,11 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.BeanReference;
+import org.springframework.beans.factory.config.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -30,17 +28,34 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
      */
     @Override
     protected Object createBean(String beanName, BeanDefinition beanDefinition) throws BeansException {
-        Object instance = createBeanInstance (beanDefinition);
+        Object instance;
+        instance = applyPostprocessBeforeInstantiation (beanDefinition.getBeanClass (), beanName);
 
-        //依赖注入
-        injectDependency (instance, beanDefinition);
+        if (instance != null) {
+            instance = applyBeanPostProcessorsAfterInitialization (instance, beanName);
+
+            if (instance != null) {
+                return instance;
+            }
+        }
+
+        instance = createBeanInstance (beanDefinition);
+
+        boolean b = applyPostprocessAfterInstantiation (instance, beanName);
+        if (!b) {
+            return instance;
+        }
+
+        applyPostprocessPropertyValues (beanDefinition, instance, beanName);
+        //依赖注入和属性设置
+        injectDependencyAndSetPropertyValues (instance, beanDefinition);
 
         instance = initializeBean (beanName, beanDefinition, instance);
 
         if (beanDefinition.isSingleton ()) {
             addSingleton (beanName, instance);
             if (instance instanceof DisposableBean ||
-                    !StringUtils.isBlank (beanDefinition.getDestroyMethodName ())){
+                    !StringUtils.isBlank (beanDefinition.getDestroyMethodName ())) {
                 addDisposableBean (beanName,
                         new DisposableBeanAdapter (beanName, beanDefinition.getDestroyMethodName (), instance));
             }
@@ -87,7 +102,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
     }
 
-    protected void injectDependency(Object bean, BeanDefinition beanDefinition) {
+    protected void injectDependencyAndSetPropertyValues(Object bean, BeanDefinition beanDefinition) {
         PropertyValue[] values = beanDefinition.getPropertyValues ().getPropertyValues ();
         for (PropertyValue propertyValue : values) {
             Object value = propertyValue.getValue ();
@@ -122,6 +137,53 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
 
         return getInstantiationStrategy ().instantiate (beanDefinition);
+    }
+
+    protected Object applyPostprocessBeforeInstantiation(Class<?> beanClass, String beanName)
+            throws BeansException {
+        Object o;
+        for (BeanPostProcessor processor : beanPostProcessors) {
+            if (processor instanceof InstantiationAwareBeanPostProcessor) {
+                o = ((InstantiationAwareBeanPostProcessor) processor).postProcessBeforeInstantiation (beanClass, beanName);
+
+                if (o != null) {
+                    return o;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return 是否要进行依赖注入和属性设置
+     */
+    protected boolean applyPostprocessAfterInstantiation(Object bean, String beanName) throws BeansException {
+        boolean b;
+        for (BeanPostProcessor processor : beanPostProcessors) {
+            if (processor instanceof InstantiationAwareBeanPostProcessor) {
+                b = ((InstantiationAwareBeanPostProcessor) processor).postProcessAfterInstantiation (bean, beanName);
+
+                if (!b) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    protected void applyPostprocessPropertyValues(BeanDefinition definition, Object existingBean, String beanName)
+            throws BeansException {
+        PropertyValues propertyValues = definition.getPropertyValues ();
+        for (BeanPostProcessor processor : beanPostProcessors) {
+            if (processor instanceof InstantiationAwareBeanPostProcessor) {
+                propertyValues =
+                        ((InstantiationAwareBeanPostProcessor) processor).postProcessPropertyValues (propertyValues, existingBean, beanName);
+            }
+        }
+
+        if (propertyValues != null) {
+            definition.setPropertyValues (propertyValues);
+        }
     }
 
     @Override

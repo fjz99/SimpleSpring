@@ -1,5 +1,6 @@
 package org.springframework.context.support;
 
+import org.springframework.aop.Advisor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -70,9 +71,15 @@ public abstract class AbstractApplicationContext
 
         registerApplicationEventListeners (factory);
 
+        initAdvisors (factory);
+
         factory.preInstantiateSingletons ();
 
         finishRefresh ();
+    }
+
+    private void initAdvisors(ConfigurableListableBeanFactory factory) {
+        factory.getBeansOfType (Advisor.class);
     }
 
     /**

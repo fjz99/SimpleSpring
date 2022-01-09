@@ -7,19 +7,12 @@
 		 http://www.springframework.org/schema/context
 		 http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 
-    <bean id="person" class="org.springframework.test.bean.Person">
-        <property name="name" value="derek"/>
-        <property name="car" ref="car"/>
+    <bean class="org.springframework.beans.factory.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:car.properties" />
     </bean>
 
     <bean id="car" class="org.springframework.test.bean.Car">
-        <property name="brand" value="porsche"/>
+        <property name="brand" value="${brand}" />
     </bean>
-
-    <bean class="org.springframework.test.common.CustomBeanFactoryPostProcessor"/>
-
-    <bean class="org.springframework.test.common.CustomerBeanPostProcessor"/>
-
-    <bean id="helloService" class="org.springframework.test.service.HelloService"/>
 
 </beans>
