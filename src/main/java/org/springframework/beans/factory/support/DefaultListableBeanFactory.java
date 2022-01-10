@@ -3,6 +3,7 @@ package org.springframework.beans.factory.support;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.util.StringValueResolver;
 
 import java.util.*;
@@ -15,6 +16,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
     private final Map<String, BeanDefinition> beanDefinitions = new HashMap<> ();
     private final List<StringValueResolver> resolvers = new ArrayList<> ();
+    private ConversionService conversionService;
 
     @Override
     public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition) {
@@ -29,7 +31,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     }
 
     @Override
-    public boolean containsBeanDefinition(String beanName) {
+    public boolean containsBeanDefinitionInternal(String beanName) {
         return beanDefinitions.containsKey (beanName);
     }
 
@@ -71,6 +73,16 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
             value = resolver.resolveStringValue (value);
         }
         return value;
+    }
+
+    @Override
+    public ConversionService getConversionService() {
+        return conversionService;
+    }
+
+    @Override
+    public void setConversionService(ConversionService conversionService) {
+        this.conversionService = conversionService;
     }
 
     @Override

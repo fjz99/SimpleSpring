@@ -1,5 +1,6 @@
 package org.springframework.beans.factory.support;
 
+import cn.hutool.core.util.TypeUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.*;
+import org.springframework.core.convert.ConversionService;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -113,7 +115,17 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 if (value == null) {
                     throw new BeansException ("找不到bean " + beanName);
                 }
+            } else {
+                //convert
+                Class<?> source = value.getClass ();
+                Class<?> target = (Class<?>) TypeUtil.getFieldType (bean.getClass (), propertyValue.getName ());
+                ConversionService service = getConversionService ();
+                if (service != null && service.canConvert (source, target)) {
+                    value = service.convert (value, target);
+                }
+                //TODO log.warn?
             }
+
             try {
                 BeanUtils.setProperty (bean, propertyValue.getName (), value);
             } catch (IllegalAccessException | InvocationTargetException e) {

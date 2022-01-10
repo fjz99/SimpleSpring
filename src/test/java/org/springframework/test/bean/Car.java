@@ -1,8 +1,9 @@
 package org.springframework.test.bean;
 
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 
 /**
  * @author derekyi
@@ -10,6 +11,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class Car {
+
+    private int price;
+
+    private LocalDate produceDate;
 
     @Value("${brand}")
     private String brand;
@@ -22,10 +27,28 @@ public class Car {
         this.brand = brand;
     }
 
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public LocalDate getProduceDate() {
+        return produceDate;
+    }
+
+    public void setProduceDate(LocalDate produceDate) {
+        this.produceDate = produceDate;
+    }
+
     @Override
     public String toString() {
         return "Car{" +
-                "brand='" + brand + '\'' +
+                "price=" + price +
+                ", produceDate=" + produceDate +
+                ", brand='" + brand + '\'' +
                 '}';
     }
 }

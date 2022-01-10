@@ -13,6 +13,7 @@ import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.DefaultResourceLoader;
 
 import java.util.Map;
@@ -26,6 +27,7 @@ public abstract class AbstractApplicationContext
         implements ConfigurableApplicationContext {
 
     public static final String APPLICATION_EVENT_MULTICASTER_BEAN_NAME = "applicationEventMulticaster";
+    public static final String CONVERSION_SERVICE_BEAN_NAME = "conversionService";
     private ApplicationEventMulticaster eventMulticaster;
 
     public abstract ConfigurableListableBeanFactory getBeanFactory();
@@ -33,6 +35,11 @@ public abstract class AbstractApplicationContext
     @Override
     public Object getBean(String name) throws BeansException {
         return getBeanFactory ().getBean (name);
+    }
+
+    @Override
+    public boolean containsBeanDefinition(String name) {
+        return getBeanFactory ().containsBeanDefinition (name);
     }
 
     @Override
@@ -78,9 +85,22 @@ public abstract class AbstractApplicationContext
 
         initAdvisors (factory);
 
-        factory.preInstantiateSingletons ();
+        //注册类型转换器和提前实例化单例bean
+        finishBeanFactoryInitialization(factory);
 
         finishRefresh ();
+    }
+
+    protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory factory) {
+        //设置类型转换器
+        if (factory.containsBeanDefinition (CONVERSION_SERVICE_BEAN_NAME)) {
+            Object conversionService = factory.getBean(CONVERSION_SERVICE_BEAN_NAME);
+            if (conversionService instanceof ConversionService) {
+                factory.setConversionService((ConversionService) conversionService);
+            }
+        }
+
+        factory.preInstantiateSingletons ();
     }
 
     private void initAdvisors(ConfigurableListableBeanFactory factory) {

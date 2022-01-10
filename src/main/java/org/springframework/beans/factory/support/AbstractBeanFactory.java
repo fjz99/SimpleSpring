@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 骨架类，只提供了createBean，getBeanDefinition
@@ -47,6 +46,13 @@ public abstract class AbstractBeanFactory
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
         return (T) getBean (name);
     }
+
+    @Override
+    public boolean containsBeanDefinition(String name) {
+        return containsBeanDefinitionInternal (name);
+    }
+
+    protected abstract boolean containsBeanDefinitionInternal(String beanName);
 
     /**
      * 可能会用factory bean

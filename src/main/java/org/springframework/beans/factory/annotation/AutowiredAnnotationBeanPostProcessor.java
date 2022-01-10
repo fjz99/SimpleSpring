@@ -1,5 +1,6 @@
 package org.springframework.beans.factory.annotation;
 
+import cn.hutool.core.util.TypeUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+import org.springframework.core.convert.ConversionService;
 
 import java.lang.reflect.Field;
 
@@ -32,7 +34,16 @@ public class AutowiredAnnotationBeanPostProcessor implements InstantiationAwareB
             Value valueAnnotation = field.getAnnotation (Value.class);
             if (valueAnnotation != null) {
                 String value = beanFactory.resolveEmbeddedValue (valueAnnotation.value ());
-                pvs.addPropertyValue (new PropertyValue (field.getName (), value));
+                //convert
+                Class<?> source = value.getClass ();
+                Class<?> target = (Class<?>) field.getGenericType ();
+                ConversionService service = beanFactory.getConversionService ();
+                Object injectValue = value;
+                if (service != null && service.canConvert (source, target)) {
+                    injectValue = service.convert (injectValue, target);
+                }
+
+                pvs.addPropertyValue (new PropertyValue (field.getName (), injectValue));
             }
 
             //处理@Autowired
