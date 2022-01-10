@@ -25,7 +25,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     public BeanDefinition getBeanDefinition(String beanName) throws BeansException {
         return Optional
                 .ofNullable (beanDefinitions.get (beanName))
-                .orElseThrow (BeansException::new);
+                .orElseThrow (() -> new BeansException ("bean " + beanName + " 不存在"));
     }
 
     @Override

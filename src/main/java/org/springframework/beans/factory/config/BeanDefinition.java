@@ -1,6 +1,7 @@
 package org.springframework.beans.factory.config;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.PropertyValues;
@@ -23,8 +24,10 @@ public class BeanDefinition {
 
     private String scope = SCOPE_SINGLETON;
 
+    @Setter(AccessLevel.NONE)
     private boolean singleton = true;
 
+    @Setter(AccessLevel.NONE)
     private boolean prototype = false;
 
     public BeanDefinition(Class<?> beanClass) {
