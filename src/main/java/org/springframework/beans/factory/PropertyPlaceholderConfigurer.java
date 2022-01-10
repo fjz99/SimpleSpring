@@ -7,6 +7,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.StringValueResolver;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -45,27 +46,46 @@ public class PropertyPlaceholderConfigurer implements BeanFactoryPostProcessor {
         for (String name : beanFactory.getBeanDefinitionNames ()) {
             BeanDefinition definition = beanFactory.getBeanDefinition (name);
             for (PropertyValue propertyValue : definition.getPropertyValues ()) {
-                resolvePlaceHolder (propertyValue, properties);
+                if (propertyValue.getValue () instanceof String) {
+                    String s = resolvePlaceHolder ((String) propertyValue.getValue (), properties);
+                    propertyValue.setValue (s);
+                }
             }
         }
+
+        //!!设置给AutowiredAnnotationBeanPostProcessor等使用的占位符解析器
+        beanFactory.addEmbeddedValueResolver (new PlaceholderResolvingStringValueResolver (properties));
     }
 
-    protected void resolvePlaceHolder(PropertyValue propertyValue, Properties properties) {
-        if (propertyValue.getValue () instanceof String) {
-            String value = (String) propertyValue.getValue ();
-
-            Matcher matcher = MATCH.matcher (value);
-            if (matcher.matches ()) {
-                String group = matcher.group (1);
-                String property = properties.getProperty (group);
-                if (property != null) {
-                    propertyValue.setValue (property);
-                } else throw new BeansException ();
-            }
-        }
+    /**
+     * 自然只有${}的情况才需要解析，其他情况不变就行了
+     */
+    protected String resolvePlaceHolder(String value, Properties properties) {
+        Matcher matcher = MATCH.matcher (value);
+        if (matcher.matches ()) {
+            String group = matcher.group (1);
+            String property = properties.getProperty (group);
+            if (property != null) {
+                return property;
+            } else throw new BeansException ();
+        } else return value;
     }
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    private class PlaceholderResolvingStringValueResolver implements StringValueResolver {
+
+        private final Properties properties;
+
+        public PlaceholderResolvingStringValueResolver(Properties properties) {
+            this.properties = properties;
+        }
+
+        @Override
+        public String resolveStringValue(String strVal) {
+            return resolvePlaceHolder (strVal, properties);
+        }
     }
 }
