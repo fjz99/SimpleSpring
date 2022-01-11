@@ -1474,7 +1474,8 @@ https://www.zhihu.com/question/438247718/answer/1730527725
 而第三级缓存是为了代理对象而添加的，但是第三级缓存是懒加载的，缓存的是SingletonFactory，自然就需要第二级缓存来保存生成的bean
 为啥要懒加载？因为
 https://www.zhihu.com/question/438247718/answer/1730527725
-的corner case，提前暴露代理对象会导致代理对象内部对象属性依赖注入的一些问题
+的corner case，提前暴露代理对象会导致addSingleton的是原来的对象，而给其他bean注入的是代理对象，产生不一致的一些问题？？
+（不确定，已经被我修复？）
 如果有问题，则设置代理bean为@LazyInit即可
 
 正常的暴露是在bean依赖注入+init方法+postprocessor执行完之后，一个成品的bean暴露出去

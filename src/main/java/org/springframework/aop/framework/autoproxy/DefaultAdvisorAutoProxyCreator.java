@@ -14,9 +14,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 实现自动代理，基于BeanPostProcessor
@@ -26,7 +24,7 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
     /**
      * 为了避免重复创建代理(在解决循环依赖的时候)
      */
-    private final Set<String> createdProxies = new HashSet<> ();
+    private final Map<String, Object> createdProxies = new HashMap<> ();
     private DefaultListableBeanFactory beanFactory;
     private boolean proxyTargetClass = false;
 
@@ -44,8 +42,9 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
      */
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (createdProxies.contains (beanName)) {
-            return bean;
+        if (createdProxies.containsKey (beanName)) {
+            //直接在这里返回代理过的bean，解决代理的循环依赖的问题
+            return createdProxies.remove (beanName);
         } else {
             return wrapIfNecessary (bean);
         }
@@ -90,8 +89,9 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
      */
     @Override
     public Object getEarlyBeanReference(Object bean, String beanName) throws BeansException {
-        createdProxies.add (beanName);
-        return wrapIfNecessary (bean);
+        Object o = wrapIfNecessary (bean);
+        createdProxies.put (beanName, o);
+        return o;
     }
 
 }

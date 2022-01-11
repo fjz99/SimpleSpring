@@ -8,6 +8,7 @@ import org.springframework.beans.factory.config.SingletonBeanRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 
 public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
