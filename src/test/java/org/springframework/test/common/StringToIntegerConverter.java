@@ -1,4 +1,4 @@
-package org.springframework.test.ioc.common;
+package org.springframework.test.common;
 
 import org.springframework.core.convert.converter.Converter;
 

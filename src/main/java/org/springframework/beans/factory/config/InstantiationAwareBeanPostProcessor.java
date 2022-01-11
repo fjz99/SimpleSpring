@@ -32,4 +32,11 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
         return pvs;
     }
 
+    /**
+     * 提前暴露bean,用于解决代理的循环依赖
+     */
+    default Object getEarlyBeanReference(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
+
 }

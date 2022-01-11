@@ -26,7 +26,7 @@ public abstract class AbstractBeanFactory
     protected abstract BeanDefinition getBeanDefinition(String beanName) throws BeansException;
 
     /**
-     * 可能会创建
+     * 获得bean，如果不存在就创建
      * 假如是factorybean的话，singleton map存放的还是factory
      * factory的生成bean的缓存是单独的 factoryBeanObjectCache
      * 这样可以保存曾经是factory bean的信息

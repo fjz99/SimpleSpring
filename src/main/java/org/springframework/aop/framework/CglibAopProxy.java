@@ -23,8 +23,8 @@ public class CglibAopProxy implements AopProxy {
     @Override
     public Object getProxy() {
         Enhancer enhancer = new Enhancer ();
-        enhancer.setSuperclass (advised.getTarget ().getTarget ().getClass ());
-        enhancer.setInterfaces (advised.getTarget ().getTargetInterfaces ());
+        enhancer.setSuperclass (advised.getTargetSource ().getTarget ().getClass ());
+        enhancer.setInterfaces (advised.getTargetSource ().getTargetInterfaces ());
         enhancer.setCallback (new DynamicAdvisedInterceptor (advised));
         return enhancer.create ();
     }
@@ -42,8 +42,8 @@ public class CglibAopProxy implements AopProxy {
 
         @Override
         public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
-            CglibMethodInvocation methodInvocation = new CglibMethodInvocation (advised.getTarget ().getTarget (), method, objects, methodProxy);
-            if (advised.getMethodMatcher ().matches (method, advised.getTarget ().getTarget ().getClass ())) {
+            CglibMethodInvocation methodInvocation = new CglibMethodInvocation (advised.getTargetSource ().getTarget (), method, objects, methodProxy);
+            if (advised.getMethodMatcher ().matches (method, advised.getTargetSource ().getTarget ().getClass ())) {
                 //代理方法
                 return advised.getMethodInterceptor ().invoke (methodInvocation);
             }

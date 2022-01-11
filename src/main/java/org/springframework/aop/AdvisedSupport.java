@@ -18,12 +18,12 @@ public class AdvisedSupport {
     //是否使用cglib代理
     private boolean proxyTargetClass = false;
 
-    private TargetSource target;
+    private TargetSource targetSource;
     private MethodInterceptor methodInterceptor;
     private MethodMatcher methodMatcher;
 
     public AdvisedSupport(TargetSource target, MethodInterceptor methodInterceptor, MethodMatcher methodMatcher) {
-        this.target = target;
+        this.targetSource = target;
         this.methodInterceptor = methodInterceptor;
         this.methodMatcher = methodMatcher;
     }

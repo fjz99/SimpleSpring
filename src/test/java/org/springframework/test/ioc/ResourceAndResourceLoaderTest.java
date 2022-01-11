@@ -3,10 +3,7 @@ package org.springframework.test.ioc;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.resource.UrlResource;
 import org.junit.Test;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.URLResource;
+import org.springframework.core.io.*;
 
 import java.io.InputStream;
 
@@ -38,10 +35,10 @@ public class ResourceAndResourceLoaderTest {
 		assertThat(content).isEqualTo("hello world");
 
 		//加载url资源
-		resource = resourceLoader.getResource("https://github.com/DerekYRC/mini-spring/blob/main/README.md");
-		assertThat(resource instanceof URLResource).isTrue();
-		inputStream = resource.getInputStream();
-		content = IoUtil.readUtf8(inputStream);
-		System.out.println(content);
+//		resource = resourceLoader.getResource("https://github.com/DerekYRC/mini-spring/blob/main/README.md");
+//		assertThat(resource instanceof URLResource).isTrue();
+//		inputStream = resource.getInputStream();
+//		content = IoUtil.readUtf8(inputStream);
+//		System.out.println(content);
 	}
 }

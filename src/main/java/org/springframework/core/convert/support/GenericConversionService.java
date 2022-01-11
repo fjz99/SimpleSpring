@@ -68,7 +68,7 @@ public class GenericConversionService implements ConversionService, ConverterReg
     /**
      * 我自己想的，不知道对不对
      * 有一个问题，就是无法确定factory支持的target类型
-     * 只提供父类型，具体由adapter检查target class type，能不能转换具体由factory决定
+     * 只在map中保存父类型，然后查找的时候会用{@link #getConverter(Class, Class)}查找具体的类型
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -140,9 +140,7 @@ public class GenericConversionService implements ConversionService, ConverterReg
             return Collections.singleton (convertiblePair);
         }
 
-        /**
-         * 这样具体的无法转换的错误由factory产生
-         */
+
         @Override
         public Object convert(Object source, Class<?> sourceType, Class<?> targetType) {
             if (!check (targetType, convertiblePair.getTargetType ())) {

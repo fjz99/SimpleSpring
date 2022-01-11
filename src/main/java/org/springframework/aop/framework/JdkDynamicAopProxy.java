@@ -1,7 +1,9 @@
 package org.springframework.aop.framework;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.aop.AdvisedSupport;
 import org.springframework.aop.TargetSource;
+import org.springframework.beans.BeansException;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -18,13 +20,20 @@ public class JdkDynamicAopProxy implements AopProxy, InvocationHandler {
 
     public JdkDynamicAopProxy(AdvisedSupport support) {
         this.support = support;
-        targetSource = support.getTarget ();
+        targetSource = support.getTargetSource ();
         proxy = createProxy ();
     }
 
     private Object createProxy() {
         ClassLoader classLoader = targetSource.getTarget ().getClass ().getClassLoader ();
-        return Proxy.newProxyInstance (classLoader, targetSource.getTargetInterfaces (), this);
+
+        //检查是否可以jdk代理
+        Class<?>[] interfaces = targetSource.getTargetInterfaces ();
+        if (ArrayUtils.isEmpty (interfaces)) {
+            throw new BeansException ("类 " + targetSource.getTarget ().getClass ().getCanonicalName ()
+                    + " 没有实现任何接口，无法使用jdk动态代理");
+        }
+        return Proxy.newProxyInstance (classLoader, interfaces, this);
     }
 
     /**

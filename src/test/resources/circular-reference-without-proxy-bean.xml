@@ -7,13 +7,12 @@
 		 http://www.springframework.org/schema/context
 		 http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 
-    <bean id="person" class="org.springframework.test.bean.Person" init-method="customInitMethod" destroy-method="customDestroyMethod">
-        <property name="name" value="derek"/>
-        <property name="car" ref="car"/>
+    <bean id="a" class="org.springframework.test.bean.A">
+        <property name="b" ref="b"/>
     </bean>
 
-    <bean id="car" class="org.springframework.test.bean.Car">
-        <property name="brand" value="porsche"/>
+    <bean id="b" class="org.springframework.test.bean.B">
+        <property name="a" ref="a"/>
     </bean>
 
 </beans>

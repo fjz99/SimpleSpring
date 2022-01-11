@@ -4,8 +4,8 @@ import org.junit.Test;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.core.convert.support.StringToNumberConverterFactory;
-import org.springframework.test.ioc.common.StringToBooleanConverter;
-import org.springframework.test.ioc.common.StringToIntegerConverter;
+import org.springframework.test.common.StringToBooleanConverter;
+import org.springframework.test.common.StringToIntegerConverter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

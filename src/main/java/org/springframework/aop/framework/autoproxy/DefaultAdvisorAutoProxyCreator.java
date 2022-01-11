@@ -15,12 +15,28 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 实现自动代理，基于BeanPostProcessor
  */
 public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPostProcessor, BeanFactoryAware {
+
+    /**
+     * 为了避免重复创建代理(在解决循环依赖的时候)
+     */
+    private final Set<String> createdProxies = new HashSet<> ();
     private DefaultListableBeanFactory beanFactory;
+    private boolean proxyTargetClass = false;
+
+    public boolean isProxyTargetClass() {
+        return proxyTargetClass;
+    }
+
+    public void setProxyTargetClass(boolean proxyTargetClass) {
+        this.proxyTargetClass = proxyTargetClass;
+    }
 
     /**
      * 在init methods触发完之后再替换为代理对象
@@ -28,6 +44,14 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
      */
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (createdProxies.contains (beanName)) {
+            return bean;
+        } else {
+            return wrapIfNecessary (bean);
+        }
+    }
+
+    private Object wrapIfNecessary(Object bean) {
         //避免死循环，即在创建advisors bean的时候也执行这个，然后就一直getBeansOfType
         if (isInfrastructureClass (bean.getClass ())) {
             return bean;
@@ -42,6 +66,7 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
                 AdvisedSupport support = new AdvisedSupport (targetSource,
                         ((MethodInterceptor) advisor.getAdvice ()),
                         advisor.getPointcut ().getMethodMatcher ());
+                support.setProxyTargetClass (proxyTargetClass);
                 res = new ProxyFactory (support).getProxy ();
             }
         }
@@ -58,4 +83,15 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = (DefaultListableBeanFactory) beanFactory;
     }
+
+    /**
+     * 解决代理的循环依赖，提前暴露代理对象
+     * <strong>注意：代理对象的循环依赖无法完全解决，见changelog.md<strong/>
+     */
+    @Override
+    public Object getEarlyBeanReference(Object bean, String beanName) throws BeansException {
+        createdProxies.add (beanName);
+        return wrapIfNecessary (bean);
+    }
+
 }

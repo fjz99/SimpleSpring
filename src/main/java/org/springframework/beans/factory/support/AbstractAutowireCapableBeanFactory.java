@@ -1,5 +1,6 @@
 package org.springframework.beans.factory.support;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.TypeUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -9,6 +10,7 @@ import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.*;
 import org.springframework.core.convert.ConversionService;
 
@@ -27,6 +29,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     /**
      * 具体创建一个bean
+     * 在初始化后提前暴露bean引用
      */
     @Override
     protected Object createBean(String beanName, BeanDefinition beanDefinition) throws BeansException {
@@ -43,6 +46,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
         instance = createBeanInstance (beanDefinition);
 
+        //提前暴露bean引用,原型bean的循环依赖无法解决
+        if (beanDefinition.isSingleton ()) {
+            setEarlyReference (beanName, instance);
+        }
+
         boolean b = applyPostprocessAfterInstantiation (instance, beanName);
         if (!b) {
             return instance;
@@ -55,6 +63,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         instance = initializeBean (beanName, beanDefinition, instance);
 
         if (beanDefinition.isSingleton ()) {
+            //初始化完全完成后添加1级缓存
+            //addSingleton会检查二级缓存和当前对象是否相同
             addSingleton (beanName, instance);
             if (instance instanceof DisposableBean ||
                     !StringUtils.isBlank (beanDefinition.getDestroyMethodName ())) {
@@ -65,6 +75,21 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
 
         return instance;
+    }
+
+    protected void setEarlyReference(final String beanName, final Object instance) {
+        addSingletonFactory (beanName, () -> {
+            Object bean = instance;
+            for (BeanPostProcessor processor : beanPostProcessors) {
+                if (processor instanceof InstantiationAwareBeanPostProcessor) {
+                    bean = ((InstantiationAwareBeanPostProcessor) processor).getEarlyBeanReference (bean, beanName);
+                    if (bean == null) {
+                        return null;
+                    }
+                }
+            }
+            return bean;
+        });
     }
 
     protected Object initializeBean(String beanName, BeanDefinition beanDefinition, Object instance) {
@@ -126,6 +151,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
                 //TODO log.warn?
             }
 
+            //注入代理对象的问题：因为是基于子类或者基于接口的代理，才可以设置field，否则就类型不匹配
             try {
                 BeanUtils.setProperty (bean, propertyValue.getName (), value);
             } catch (IllegalAccessException | InvocationTargetException e) {

@@ -14,7 +14,10 @@ import java.util.*;
 public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFactory
         implements ConfigurableListableBeanFactory, BeanDefinitionRegistry {
 
-    private final Map<String, BeanDefinition> beanDefinitions = new HashMap<> ();
+    /**
+     * 有序的hashmap，保证bean定义的顺序和声明的顺序相同
+     */
+    private final Map<String, BeanDefinition> beanDefinitions = new LinkedHashMap<> ();
     private final List<StringValueResolver> resolvers = new ArrayList<> ();
     private ConversionService conversionService;
 
