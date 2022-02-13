@@ -44,6 +44,7 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (createdProxies.containsKey (beanName)) {
             //直接在这里返回代理过的bean，解决代理的循环依赖的问题
+            //这里我改动过了，保证没问题？？
             return createdProxies.remove (beanName);
         } else {
             return wrapIfNecessary (bean);
