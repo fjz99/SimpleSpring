@@ -1472,6 +1472,7 @@ https://www.zhihu.com/question/438247718/answer/1730527725
 有一个corner case
 首先，只有一级缓存也行（只要提前暴露bean引用，提前暴露即在依赖注入之前暴露），
 而第三级缓存是为了代理对象而添加的，但是第三级缓存是懒加载的，缓存的是SingletonFactory，自然就需要第二级缓存来保存生成的bean
+（比如A依赖于B，B依赖于A和C，C依赖于A；这样的话C获得的A在二级缓存中）
 为啥要懒加载？因为
 https://www.zhihu.com/question/438247718/answer/1730527725
 的corner case，提前暴露代理对象会导致addSingleton的是原来的对象，而给其他bean注入的是代理对象，产生不一致的一些问题？？
