@@ -1,6 +1,5 @@
 package org.springframework.beans.factory.support;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.TypeUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -10,7 +9,6 @@ import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.*;
 import org.springframework.core.convert.ConversionService;
 

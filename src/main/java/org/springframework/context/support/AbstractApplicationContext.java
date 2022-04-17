@@ -74,6 +74,7 @@ public abstract class AbstractApplicationContext
         ConfigurableListableBeanFactory factory = getBeanFactory ();
 
         //ApplicationContextAware是通过BeanPostProcesso完成的！
+        //很多aware接口都是硬编码
         factory.addBeanPostProcessor (new ApplicationContextAwareProcessor (this));
 
         invokeBeanFactoryPostprocessors (factory);
