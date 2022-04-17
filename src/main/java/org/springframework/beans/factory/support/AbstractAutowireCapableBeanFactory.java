@@ -62,7 +62,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
         if (beanDefinition.isSingleton ()) {
             //初始化完全完成后添加1级缓存
-            //addSingleton会检查二级缓存和当前对象是否相同
+            //addSingleton会检查二级缓存和当前对象是否相同,等价于找是否被代理了。被代理了肯定不同
             addSingleton (beanName, instance);
             if (instance instanceof DisposableBean ||
                     !StringUtils.isBlank (beanDefinition.getDestroyMethodName ())) {
